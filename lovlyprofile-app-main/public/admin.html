@@ -24,6 +24,13 @@
       --error-color: #ff4444;
     }
 
+    body.light-mode {
+      --bg-dark: #f5f5f5;
+      --bg-card: rgba(255, 255, 255, 0.8);
+      --text-color: #121212;
+      color-scheme: light;
+    }
+
     body {
       font-family: 'Roboto', sans-serif;
       background: var(--bg-dark);
@@ -31,6 +38,7 @@
       margin: 0;
       padding: 20px;
       min-height: 100vh;
+      color-scheme: dark;
     }
 
     /* СТИЛИ ИНТЕРФЕЙСА - КОПИРУЕМ ИЗ ПЕРВОГО КОДА */
@@ -82,6 +90,20 @@
       transform: translateY(-2px);
     }
     .tab-button.active {
+      background: var(--neon-color);
+      color: var(--bg-dark);
+    }
+    .theme-toggle {
+      margin-left: auto;
+      background: transparent;
+      border: 1px solid var(--neon-color);
+      color: var(--neon-color);
+      border-radius: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .theme-toggle:hover {
       background: var(--neon-color);
       color: var(--bg-dark);
     }
@@ -417,6 +439,57 @@
 .q-block .opt{display:flex;gap:6px;margin:4px 0}
 .q-block .opt input[type="radio"]{margin-top:6px}
 
+/* ===== Чат с подписчиками ===== */
+#chatThreads {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+#chatThreads button {
+  padding: 6px 10px;
+  border: 1px solid var(--neon-color);
+  background: transparent;
+  color: var(--neon-color);
+  border-radius: 8px;
+  cursor: pointer;
+}
+#chatBox {
+  margin-top: 20px;
+  max-width: 400px;
+  height: 400px;
+  display: none;
+  flex-direction: column;
+  background: var(--card-bg);
+  border: 1px solid var(--neon-color);
+  border-radius: var(--border-radius);
+}
+#chatMessages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+}
+#replyForm {
+  display: flex;
+  border-top: 1px solid var(--neon-color);
+}
+#replyInput {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: transparent;
+  color: var(--text-color);
+}
+#replyForm button {
+  border: none;
+  background: var(--neon-color);
+  color: var(--bg-color);
+  padding: 10px 15px;
+  cursor: pointer;
+}
+.msg.user { text-align: left; margin-bottom: 8px; color: var(--secondary-text); }
+.msg.artist { text-align: right; margin-bottom: 8px; color: var(--neon-color); }
+
   </style>
 </head>
 <body>
@@ -435,6 +508,7 @@
         <h2 id="currentProfileName">whylovly</h2>
         <p id="currentProfileBio">Музыкант | Создатель контента | Артист</p>
       </div>
+      <button id="themeToggle" class="theme-toggle" aria-label="Переключить тему">🌙</button>
     </div>
 
     <!-- Навигация по табам -->
@@ -687,7 +761,20 @@
         </div>
       </div>
     </div>
+    </div>
+
+<section id="subscriberChat">
+  <h2>Чат с подписчиками</h2>
+  <div id="chatThreads"></div>
+  <div id="chatBox">
+    <div id="chatMessages"></div>
+    <form id="replyForm">
+      <input id="replyInput" type="text" placeholder="Ответ..." autocomplete="off" />
+      <button type="submit">⮞</button>
+    </form>
   </div>
+</section>
+
 <!-- Блок скриптов Firebase и основной логики -->
 <script type="module">
   /* ====== Импорты Firebase ====== */
@@ -716,7 +803,9 @@ import {
   orderBy,
   updateDoc,
   writeBatch,
-  serverTimestamp
+  serverTimestamp,
+  onSnapshot,
+  limit
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
   
@@ -742,7 +831,87 @@ import {
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
-  const storage = getStorage(app);
+const storage = getStorage(app);
+
+  const themeToggle = document.getElementById('themeToggle');
+  function applyTheme(theme) {
+    document.body.classList.toggle('light-mode', theme === 'light');
+    themeToggle.textContent = theme === 'light' ? '🌙' : '☀️';
+    localStorage.setItem('theme', theme);
+  }
+  applyTheme(localStorage.getItem('theme') || 'dark');
+  themeToggle.addEventListener('click', () => {
+    const newTheme = document.body.classList.contains('light-mode') ? 'dark' : 'light';
+    applyTheme(newTheme);
+  });
+
+  /* ====== Чат с подписчиками ====== */
+  const chatThreads = document.getElementById('chatThreads');
+  const chatBox = document.getElementById('chatBox');
+  const chatMessages = document.getElementById('chatMessages');
+  const replyForm = document.getElementById('replyForm');
+  const replyInput = document.getElementById('replyInput');
+  let activeChatUser = null;
+  let chatsData = {};
+
+  onSnapshot(collection(db, 'chats'), (snap) => {
+    chatsData = {};
+    snap.forEach((docSnap) => {
+      const data = docSnap.data();
+      if (!chatsData[data.userId]) chatsData[data.userId] = [];
+      chatsData[data.userId].push({ id: docSnap.id, ...data });
+    });
+    chatThreads.innerHTML = '';
+    Object.keys(chatsData).forEach((uid) => {
+      const btn = document.createElement('button');
+      btn.textContent = uid;
+      btn.onclick = () => {
+        activeChatUser = uid;
+        chatBox.style.display = 'flex';
+        renderMessages();
+      };
+      chatThreads.appendChild(btn);
+    });
+    if (activeChatUser) renderMessages();
+  });
+
+  function renderMessages() {
+    chatMessages.innerHTML = '';
+    (chatsData[activeChatUser] || [])
+      .sort((a, b) => a.timestamp?.toMillis() - b.timestamp?.toMillis())
+      .forEach((m) => {
+        const udiv = document.createElement('div');
+        udiv.className = 'msg user';
+        udiv.textContent = m.text;
+        chatMessages.appendChild(udiv);
+        if (m.reply) {
+          const adiv = document.createElement('div');
+          adiv.className = 'msg artist';
+          adiv.textContent = m.reply;
+          chatMessages.appendChild(adiv);
+        }
+      });
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  if (replyForm) {
+    replyForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const text = replyInput.value.trim();
+      if (!text || !activeChatUser) return;
+      const q = query(
+        collection(db, 'chats'),
+        where('userId', '==', activeChatUser),
+        orderBy('timestamp', 'desc'),
+        limit(1)
+      );
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        await updateDoc(snap.docs[0].ref, { reply: text });
+      }
+      replyInput.value = '';
+    });
+  }
 
   /* ====== Настраиваем локальное хранилище для сессии ====== */
   setPersistence(auth, browserLocalPersistence)
@@ -1661,3 +1830,5 @@ if (data.unlockQuiz?.length) {
     // Но они будут вызываться только после авторизации (в onAuthStateChanged)
   });
 </script>
+</body>
+</html>
