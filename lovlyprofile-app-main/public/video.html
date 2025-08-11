@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Видео - whylovly</title>
+    <style>
+        @font-face {
+            font-family: 'Blackmoor';
+            src: url('./1-BLACKMOOR-LET-PLAIN103.TTF') format('truetype');
+        }
+
+        :root {
+            --neon-color: #00ffcc;
+            --neon-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+        }
+
+        body {
+            font-family: 'Blackmoor', sans-serif;
+            background: #0d0d0d;
+            color: white;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        .menu {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 0;
+            text-align: center;
+            z-index: 1000;
+        }
+
+        .menu a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 18px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .menu a:hover {
+            color: var(--neon-color);
+        }
+
+        .video-container {
+            margin-top: 100px;
+            padding: 20px;
+        }
+
+        h1 {
+            color: var(--neon-color);
+            font-size: 2.5em;
+            text-shadow: 0 0 10px var(--neon-color);
+            margin-bottom: 40px;
+        }
+
+        .videos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .video-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--neon-color);
+            box-shadow: var(--neon-shadow);
+            border-radius: 15px;
+            padding: 15px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .video-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 20px var(--neon-color);
+        }
+
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 */
+            height: 0;
+            overflow: hidden;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .video-info {
+            padding: 10px;
+        }
+
+        .video-title {
+            color: var(--neon-color);
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .video-description {
+            color: #cccccc;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+
+        .video-actions {
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+        }
+
+        .action-button {
+            background: none;
+            border: 1px solid var(--neon-color);
+            color: var(--neon-color);
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-family: 'Blackmoor', sans-serif;
+        }
+
+        .action-button:hover {
+            background: var(--neon-color);
+            color: #000;
+            box-shadow: 0 0 15px var(--neon-color);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .videos-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="menu">
+        <a href="index.html">Главная</a>
+        <a href="music.html">Музыка</a>
+        <a href="video.html">Видео</a>
+    </div>
+
+    <div class="video-container">
+        <h1>Видео</h1>
+        <div class="videos-grid" id="videos-grid">
+            <!-- Видео будут добавляться через JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        // Пример структуры данных для видео
+        const videos = [
+            {
+                id: 1,
+                youtubeId: 'TpOkmZweAeI',
+                title: 'whylovly - Название видео',
+                description: 'Описание видео',
+                likes: 24,
+                comments: 8
+            },
+            // Добавьте больше видео здесь
+        ];
+
+        function renderVideos() {
+            const container = document.getElementById('videos-grid');
+            videos.forEach((video, index) => {
+                const videoElement = document.createElement('div');
+                videoElement.className = 'video-card';
+                videoElement.style.animationDelay = `${index * 0.1}s`;
+                
+                videoElement.innerHTML = `
+                    <div class="video-wrapper">
+                        <iframe 
+                            src="https://www.youtube.com/embed/${video.youtubeId}"
+                            title="${video.title}"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen>
+                        </iframe>
+                    </div>
+                    <div class="video-info">
+                        <div class="video-title">${video.title}</div>
+                        <div class="video-description">${video.description}</div>
+                    </div>
+                    <div class="video-actions">
+                        <button class="action-button" onclick="likeVideo(${video.id})">
+                            ❤️ ${video.likes}
+                        </button>
+                        <button class="action-button" onclick="showComments(${video.id})">
+                            💬 ${video.comments}
+                        </button>
+                        <button class="action-button" onclick="shareVideo(${video.id})">
+                            🔗 Поделиться
+                        </button>
+                    </div>
+                `;
+                container.appendChild(videoElement);
+            });
+        }
+
+        function likeVideo(id) {
+            // Здесь будет логика лайков через Firebase
+            console.log(`Лайк видео ${id}`);
+        }
+
+        function showComments(id) {
+            // Здесь будет логика комментариев
+            console.log(`Комментарии к видео ${id}`);
+        }
+
+        function shareVideo(id) {
+            // Здесь будет логика шеринга
+            console.log(`Поделиться видео ${id}`);
+        }
+
+        // Рендерим видео при загрузке страницы
+        document.addEventListener('DOMContentLoaded', renderVideos);
+    </script>
+</body>
+</html>

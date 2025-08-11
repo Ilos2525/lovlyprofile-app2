@@ -1,0 +1,20 @@
+{
+  "posts": [
+    {
+      "id": 1,
+      "type": "photo",
+      "image": "https://i.imgur.com/yourphoto.jpg",
+      "description": "Первый пост! Это тестовое описание.",
+      "likes": 12,
+      "comments": ["🔥", "Круто!"]
+    },
+    {
+      "id": 2,
+      "type": "photo",
+      "image": "https://i.imgur.com/yourphoto2.jpg",
+      "description": "Второй пост с ещё одним фото.",
+      "likes": 25,
+      "comments": ["💙", "Бомба!"]
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Архив | whylovly</title>
+
+  <!--  Шрифт + простые стили ------------------------------------------------ -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body      { margin:0; font-family:Roboto, sans-serif; background:#111; color:#fff; }
+    h1        { text-align:center; margin:30px 0; color:#00ffcc; }
+    .grid     { max-width:1000px; margin:0 auto 40px; display:grid;
+                grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:20px; }
+    .card     { background:#222; border:1px solid #00ffcc55; border-radius:12px; padding:20px;
+                display:flex; flex-direction:column; align-items:center; gap:15px; }
+    .card img { width:100%; border-radius:8px; }
+    .locked   { filter:blur(6px) grayscale(0.8); pointer-events:none; }
+    .btn      { margin:40px auto; display:block; background:#00ffcc; color:#111; border:none;
+                padding:12px 26px; border-radius:8px; cursor:pointer; font-weight:700; }
+  </style>
+</head>
+<body>
+  <h1>Архив контента</h1>
+
+  <!-- сюда положим карточки -->
+  <div id="archiveGrid" class="grid"></div>
+
+  <!-- вернуться на главную -->
+  <a href="index.html" class="btn">← к главной</a>
+
+  <!--  Firebase + вывод архива --------------------------------------------- -->
+  <script type="module">
+    /* Firebase — тот же набор, что и в admin.html -------------------------- */
+    import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore,
+             collection, query, where, orderBy, getDocs }
+           from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey:            "AIzaSyDPMqef3_hF-QpBr09qtry_45K4h28oMT0",
+      authDomain:        "whylovly-website-8adcb.firebaseapp.com",
+      projectId:         "whylovly-website-8adcb",
+      storageBucket:     "whylovly-website-8adcb.appspot.com",
+      messagingSenderId: "749833792533",
+      appId:             "1:749833792533:web:2494649a11b628cd84321c"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+
+    /* ========== Загрузка архивных постов (только isArchive === true) ====== */
+    async function loadArchive() {
+      const grid = document.getElementById('archiveGrid');
+      grid.innerHTML = 'Загрузка...';
+
+      try {
+        const snap = await getDocs(
+          query(
+            collection(db, 'posts'),
+            where('isArchive', '==', true),
+            orderBy('archiveSeq', 'asc')
+          )
+        );
+
+        if (snap.empty) {
+          grid.innerHTML = 'В архиве пока пусто 🙂';
+          return;
+        }
+
+        let html = '';
+        snap.docs.forEach(d => {
+          const p = d.data();
+          const thumb =
+            p.category === 'photo'           ? p.fileURL :
+            p.category === 'video'           ? `https://img.youtube.com/vi/${getYouTubeId(p.fileURL)}/mqdefault.jpg` :
+            p.category === 'uploaded_video'  ? p.coverURL || p.fileURL :
+            p.category === 'music'           ? p.coverURL || 'https://via.placeholder.com/400x400?text=Track' :
+                                               '';
+
+          html += `
+            <div class="card ${p.unlockType !== 'auto' ? 'locked' : ''}">
+              ${thumb ? `<img src="${thumb}" alt="">` : ''}
+              <strong>Задание ${p.archiveSeq ?? '-'}</strong>
+              <em>${p.description || ''}</em>
+            </div>`;
+        });
+
+        grid.innerHTML = html;
+
+      } catch (e) {
+        console.error('archive load error', e);
+        grid.innerHTML = 'Ошибка загрузки архива';
+      }
+    }
+
+    /* маленький помощник для YouTube превью -------------------------------- */
+    function getYouTubeId(url='') {
+      const m = url.match(/(?:v=|\/)([0-9A-Za-z_-]{11})/);
+      return m ? m[1] : '';
+    }
+
+    /* старт */
+    document.addEventListener('DOMContentLoaded', loadArchive);
+  </script>
+</body>
+</html>

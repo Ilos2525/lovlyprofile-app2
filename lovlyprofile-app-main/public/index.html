@@ -1,0 +1,2241 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#121212">
+    <meta name="description" content="whylovly - личный блог">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <title>whylovly</title>
+    
+    <!-- Подключаем Telegram WebApp -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- Подключаем шрифт Roboto -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<style>
+    /* Основные переменные и настройки темы */
+    :root {
+        --neon-color: #00ffcc;
+        --neon-shadow: rgba(0, 255, 204, 0.3);
+        --bg-color: #121212;
+        --card-bg: rgba(0, 0, 0, 0.3);
+        --text-color: #ffffff;
+        --secondary-text: #cccccc;
+        --transition: all 0.3s ease;
+        --border-radius: 15px;
+    }
+
+    /* Сброс и базовые стили */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+        background: var(--bg-color);
+        color: var(--text-color);
+        font-family: 'Roboto', sans-serif;
+        line-height: 1.6;
+        min-height: 100vh;
+        overflow-x: hidden;
+        color-scheme: dark;
+    }
+
+    /* Анимации */
+    @keyframes neonPulse {
+        0% { box-shadow: 0 0 10px var(--neon-shadow); }
+        50% { box-shadow: 0 0 20px var(--neon-shadow); }
+        100% { box-shadow: 0 0 10px var(--neon-shadow); }
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Профиль */
+    .profile-section {
+        text-align: center;
+        padding: 40px 20px;
+        background: var(--card-bg);
+        border-bottom: 2px solid var(--neon-color);
+        position: relative;
+        animation: fadeIn 0.5s ease;
+    }
+
+    .profile-section::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(45deg, rgba(0,255,204,0.1) 0%, transparent 100%);
+        z-index: 0;
+    }
+
+    .profile-content {
+        position: relative;
+        z-index: 1;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .profile-photo {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        border: 3px solid var(--neon-color);
+        object-fit: cover;
+        margin-bottom: 20px;
+        animation: neonPulse 2s infinite;
+        transition: var(--transition);
+    }
+
+    .profile-photo:hover {
+        transform: scale(1.05);
+    }
+
+    .profile-name {
+        color: var(--neon-color);
+        font-size: 28px;
+        margin: 10px 0;
+        text-shadow: 0 0 10px var(--neon-shadow);
+    }
+
+    .profile-bio {
+        color: var(--secondary-text);
+        max-width: 600px;
+        margin: 0 auto;
+        font-size: 16px;
+        opacity: 0.9;
+    }
+
+    /* Навигация */
+    .nav {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        padding: 20px;
+        background: var(--card-bg);
+        border-bottom: 2px solid var(--neon-color);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+
+    .nav-link {
+        color: var(--neon-color);
+        text-decoration: none;
+        padding: 10px 25px;
+        border: 1px solid var(--neon-color);
+        border-radius: var(--border-radius);
+        transition: var(--transition);
+        font-weight: 500;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .nav-link::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: var(--neon-color);
+        opacity: 0;
+        transition: var(--transition);
+        z-index: -1;
+    }
+
+    .nav-link:hover::before {
+        opacity: 0.1;
+    }
+
+    .nav-link.active {
+        background: var(--neon-color);
+        color: var(--bg-color);
+    }
+
+    /* Контейнер контента */
+    .content {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    /* Секции */
+    .section {
+        display: none;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: var(--transition);
+    }
+
+    .section.active {
+        display: block;
+        opacity: 1;
+        transform: translateY(0);
+        animation: fadeIn 0.5s ease;
+    }
+</style>
+<style>
+
+.uploaded-video {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 12px; 
+ object-fit: cover;    /* немного пространства под слайдером */
+}
+
+    /* Посты */
+    .posts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 30px;
+        padding: 20px;
+        animation: fadeIn 0.5s ease;
+    }
+
+    .post {
+        background: var(--card-bg);
+        border: 1px solid var(--neon-color);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        transition: var(--transition);
+        position: relative;
+    }
+
+    .post:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px var(--neon-shadow);
+    }
+
+    .post img {
+        width: 100%;
+       height:auto;
+        object-fit: cover;
+        transition: var(--transition);
+    }
+
+    .post:hover img {
+        transform: scale(1.05);
+    }
+
+    .post-content {
+        padding: 20px;
+    }
+
+    .post-description {
+        color: var(--secondary-text);
+        line-height: 1.5;
+        margin-bottom: 15px;
+    }
+
+    .post-date {
+        color: var(--neon-color);
+        font-size: 0.9em;
+        opacity: 0.8;
+    }
+
+    /* Аудио посты */
+    .audio-post {
+        padding: 25px;
+        background: linear-gradient(45deg, rgba(0,255,204,0.05) 0%, transparent 100%);
+        border-radius: var(--border-radius);
+    }
+
+    .audio-title {
+        color: var(--neon-color);
+        margin-bottom: 15px;
+        font-size: 1.2em;
+    }
+
+    .audio-player {
+        width: 100%;
+        margin: 15px 0;
+    }
+
+    .audio-player audio {
+        width: 100%;
+        height: 40px;
+        border-radius: 20px;
+        background: transparent;
+    }
+
+    /* Видео контейнер */
+    .video-container {
+        position: relative;
+        padding-bottom: 56.25%;
+        height: 0;
+        overflow: hidden;
+        border-radius: var(--border-radius);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+
+    .video-container iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+
+    /* Кнопки действий */
+    .post-actions {
+        display: flex;
+        gap: 15px;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid rgba(0,255,204,0.2);
+    }
+
+    .action-btn {
+        background: transparent;
+        border: none;
+        color: var(--secondary-text);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 8px 15px;
+        border-radius: 20px;
+        transition: var(--transition);
+        font-size: 16px;
+    }
+
+    .action-btn:hover {
+        color: var(--neon-color);
+        background: rgba(0,255,204,0.1);
+    }
+
+    .action-btn.liked {
+        color: var(--neon-color);
+    }
+
+    /* Загрузка */
+    .loading {
+        text-align: center;
+        padding: 50px;
+        color: var(--neon-color);
+        position: relative;
+    }
+
+    .loading::after {
+        content: '';
+        width: 40px;
+        height: 40px;
+        border: 3px solid transparent;
+        border-top-color: var(--neon-color);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        position: absolute;
+        top: calc(50% - 20px);
+        left: calc(50% - 20px);
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+        .posts-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+            padding: 10px;
+        }
+
+        .nav {
+            flex-direction: column;
+            gap: 10px;
+            padding: 15px;
+        }
+
+        .nav-link {
+            width: 80%;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .profile-photo {
+            width: 120px;
+            height: 120px;
+        }
+
+        .profile-name {
+            font-size: 24px;
+        }
+
+        .post img {
+            height: 250px;
+        }
+    }
+    /* Уведомления */
+    .notification {
+        position: fixed;
+        top: -100px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.9);
+        border: 1px solid var(--neon-color);
+        border-radius: 12px;
+        padding: 15px 25px;
+        color: white;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 0 20px var(--neon-shadow);
+        transition: top 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+
+    .notification.show {
+        top: 20px;
+    }
+
+    .notification-icon {
+        font-size: 20px;
+    }
+
+    .notification-content {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .notification-user {
+        color: var(--neon-color);
+        font-weight: 500;
+    }
+
+    .notification-message {
+        font-size: 14px;
+        opacity: 0.9;
+    }
+    /* Комментарии */
+    .comments-section {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(0,255,204,0.2);
+    }
+
+    .comment-form {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .comment-input {
+        flex: 1;
+        background: rgba(0,0,0,0.3);
+        border: 1px solid var(--neon-color);
+        border-radius: 10px;
+        padding: 10px;
+        color: var(--text-color);
+        resize: vertical;
+        min-height: 40px;
+        font-family: inherit;
+    }
+
+    .comment-submit {
+        background: var(--neon-color);
+        color: var(--bg-color);
+        border: none;
+        border-radius: 10px;
+        padding: 10px 20px;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .comment-submit:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+    }
+
+    .comments-container {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .comment {
+        background: rgba(0,0,0,0.3);
+        border-radius: 10px;
+        padding: 15px;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .comment-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+    }
+
+    .comment-author {
+        color: var(--neon-color);
+        font-weight: 500;
+    }
+
+    .comment-date {
+        color: var(--secondary-text);
+        font-size: 0.9em;
+    }
+
+    .comment-text {
+        color: var(--text-color);
+        line-height: 1.4;
+    }
+/* ... ваши существующие стили ... */
+
+   /* Стили для предупреждения об авторизации */
+.auth-warning {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-color);
+    z-index: 9999;
+    padding: 20px;
+    text-align: center;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.auth-warning h2 {
+    color: var(--neon-color);
+    margin-bottom: 20px;
+}
+.auth-warning p {
+    color: var(--secondary-text);
+    margin-bottom: 15px;
+}
+.auth-warning a {
+    color: var(--neon-color);
+    text-decoration: none;
+}
+/* —— Расширенные стили для аудиопостов —— */
+.audio-post {
+  display: flex;
+  gap: 15px;
+  padding: 15px;
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--neon-color);
+  overflow: hidden;
+}
+.audio-cover img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: var(--border-radius);
+}
+.audio-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.audio-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.audio-controls button {
+  background: transparent;
+  border: none;
+  font-size: 1.2em;
+  cursor: pointer;
+  transition: var(--transition);
+  color: var(--neon-color);
+}
+.audio-controls button:hover {
+  transform: scale(1.1);
+}
+.audio-progress {
+  margin-top: 8px;
+}
+.audio-progress .bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(0,255,204,0.2);
+  border-radius: 2px;
+  overflow: hidden;
+  cursor: pointer;
+}
+.audio-progress .fill {
+  width: 0;
+  height: 100%;
+  background: var(--neon-color);
+  transition: width 0.1s linear;
+}
+.audio-progress .time {
+  font-size: 0.8em;
+  margin-top: 4px;
+  color: var(--secondary-text);
+  display: flex;
+  justify-content: space-between;
+}
+
+/* —— Мини‑плеер внизу экрана —— */
+.mini-player {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--card-bg);
+  border-top: 1px solid var(--neon-color);
+  padding: 10px;
+  display: none;
+  align-items: center;
+  gap: 10px;
+  z-index: 500;
+}
+.mini-player.show {
+  display: flex;
+}
+.mini-player img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+.mini-player .info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.mini-player .info .title {
+  font-size: 14px;
+  color: var(--text-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mini-player .mini-controls button {
+  background: transparent;
+  border: none;
+  font-size: 1.2em;
+  cursor: pointer;
+  color: var(--neon-color);
+  transition: var(--transition);
+}
+.mini-player .mini-progress {
+  width: 100%;
+  height: 3px;
+  background: rgba(0,255,204,0.2);
+  border-radius: 2px;
+  margin-top: 4px;
+  position: relative;
+}
+.mini-player .mini-progress .fill {
+  width: 0;
+  height: 100%;
+  background: var(--neon-color);
+}
+    .uploaded-video {
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  border-radius: var(--border-radius);
+  display: block;
+}
+/* === Универсальный слайдер фото + видео === */
+/* неизменный квадрат */
+.slider {
+  position: relative;
+  width: 100%;
+  padding-bottom: 100%;
+  overflow: hidden;
+  background: #222;
+}
+
+/* когда контент загружен — снимаем квадрат, включаем авто-высоту */
+.slider.loaded {
+  padding-bottom: 0;
+  height: auto !important;
+}
+
+/* сами слайды по-прежнему абсолютно позиционируются */
+.slider .slide {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+.slider .slide.active {
+  display: block;
+}
+
+
+/* стрелки */
+.slider .prev,
+.slider .next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,0.5);
+  color: #fff;
+  font-size: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+}
+.slider .prev { left: 12px; }
+.slider .next { right: 12px; }
+
+
+
+/* ---------- LOCKED POST ---------- */
+.post.locked{
+  display:flex; flex-direction:column; justify-content:center; align-items:center;
+  min-height:300px;
+  text-align:center;
+  position:relative;
+}
+
+.post.locked .lock-box{
+  max-width:80%;                             /* чтобы не прилипало к краям */
+  animation: fadeIn 0.4s ease;
+}
+.post.locked .lock-title{font-size:1.2em; margin-bottom:8px;}
+.post.locked .lock-hint {color:var(--secondary-text); margin-bottom:15px;}
+.post.locked input{
+  width:100%; padding:10px; border-radius:8px; border:1px solid var(--neon-color);
+  background:rgba(0,0,0,.2); color:var(--text-color); margin-bottom:10px;
+}
+.post.locked button{
+  padding:8px 22px; border:none; border-radius:8px; cursor:pointer;
+  background:var(--neon-color); color:var(--bg-color); font-weight:500;
+}
+.lock-box{
+  padding:40px 20px;
+  display:flex;
+  flex-direction:column;
+  gap:15px;
+  text-align:center;
+}
+.lock-title{color:var(--neon-color);font-weight:500}
+.lock-hint{color:var(--secondary-text);font-size:.95em}
+</style>  
+<!-- ==== QUIZ OVERLAY ==== -->
+<style>
+.quiz-overlay{
+  position:fixed;inset:0;z-index:1500;
+  background:rgba(0,0,0,.85);
+  display:flex;justify-content:center;align-items:center;
+  padding:20px;
+}
+.quiz-card{
+  max-width:500px;width:100%;background:var(--card-bg);
+  border:1px solid var(--neon-color);border-radius:15px;
+  padding:25px;text-align:center;animation:fadeIn .3s ease;
+}
+.quiz-q{font-size:1.2em;margin-bottom:20px}
+.quiz-img{max-width:100%;border-radius:8px;margin-bottom:15px}
+.quiz-opt{
+  display:block;width:100%;margin:8px 0;padding:12px 18px;
+  background:rgba(255,255,255,.05);border:1px solid var(--neon-color);
+  border-radius:10px;color:var(--text-color);cursor:pointer;
+  transition:background .25s;
+}
+.quiz-grid{
+  display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:18px
+}
+.quiz-opt{
+  width:110px;height:148px;padding:0;border:1px solid var(--neon-color);
+  border-radius:10px;background:rgba(255,255,255,.04);cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  transition:background .25s;
+}
+.quiz-opt img{width:100%;height:110px;object-fit:cover;border-radius:10px 10px 0 0}
+.quiz-opt span{display:block;padding:6px 4px;font-size:.85em;line-height:1.2}
+.quiz-opt:hover{background:rgba(0,255,204,.12)}
+}
+.quiz-opt:hover{background:rgba(0,255,204,.12)}
+.quiz-close{
+  margin-top:20px;background:transparent;border:none;
+  color:var(--secondary-text);cursor:pointer
+}
+
+/* для текстовых вариантов (без картинки) делаем блок во всю ширину и auto‑высоту */
+.quiz-opt.text-only {
+  width: 100% !important;
+  height: auto !important;
+  padding: 12px 18px !important;
+  display: flex !important;
+  justify-content: center;
+  font-size: 1em;
+  line-height: 1.4;
+}
+
+
+.post-description{
+  max-height:120px;
+  overflow:hidden;
+  position:relative;
+  cursor:pointer;
+}
+.post-description::after{
+  content:'Читать далее';
+  position:absolute;
+  bottom:0; left:0; right:0;
+  padding:20px 0 5px;
+  text-align:center;
+  background:linear-gradient(0deg,rgba(0,0,0,0.8),transparent);
+  color:var(--neon-color);
+  font-size:.9em;
+}
+.post-description.expanded{
+  max-height:none;
+}
+.post-description.expanded::after{
+  display:none;
+}
+
+    .video-wrapper {
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: var(--border-radius);
+}
+
+.video-placeholder {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.video-wrapper::after {
+  content: '▶';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 3em;
+  color: var(--neon-color);
+  text-shadow: 0 0 10px var(--neon-shadow);
+  pointer-events: none;
+}
+
+    .badge {
+    background-color: red;
+    color: white;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 20px;
+    position: relative;
+    top: -2px;
+    left: 4px;
+  }
+    
+</style>
+<body>
+    <div class="profile-section">
+        <div class="profile-content">
+            <img id="profileImage" src="https://placehold.co/150x150" class="profile-photo" alt="Profile Photo">
+            <h1 id="profileName" class="profile-name">whylovly</h1>
+            <p id="profileBio" class="profile-bio">Загрузка профиля...</p>
+        </div>
+    </div>
+
+    <div class="nav">
+       <a href="#" class="nav-link" onclick="showSection('all')">
+  Главная <span class="badge" id="badge-home" style="display:none;"></span>
+</a>
+
+<a href="#" class="nav-link" onclick="showSection('music')">
+  Музыка <span class="badge" id="badge-music" style="display:none;"></span>
+</a>
+
+<a href="#" class="nav-link" onclick="showSection('video')">
+  Видео <span class="badge" id="badge-video" style="display:none;"></span>
+</a>
+
+<a href="#" class="nav-link" onclick="showSection('favorites')">
+  Избранное <span class="badge" id="badge-favorite" style="display:none;"></span>
+</a>
+         <a href="#"
+           id="navArchive"
+           class="nav-link"
+           style="display: none;"
+           onclick="showSection('archive')">
+          Архив
+        </a>
+    </div>
+
+<button
+  id="resetProgressBtn"
+  style="
+    display: none;
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    padding: 10px 15px;
+    background: var(--neon-color);
+    color: var(--bg-color);
+    border: none;
+    border-radius: 8px;
+    z-index: 1000;
+    font-weight: 500;
+  "
+>
+  Сбросить прогресс
+</button>
+
+  <div class="content">
+  <!-- Главная -->
+  <div id="all" class="section active">
+    <div class="posts-grid" id="allPosts">
+      <div class="loading">Загрузка постов</div>
+    </div>
+  </div>
+
+  <!-- Музыка -->
+  <div id="music" class="section">
+    <div class="posts-grid" id="musicPosts">
+      <div class="loading">Загрузка музыки</div>
+    </div>
+  </div>
+
+<!-- Избранное -->
+<div id="favorites" class="section">
+  <h2>Избранные треки</h2>
+  <div class="posts-grid" id="favoriteMusicPosts">
+    <div class="loading">Загрузка избранного...</div>
+  </div>
+</div>
+      
+  <!-- Видео -->
+  <div id="video" class="section">
+    <div class="posts-grid" id="videoPosts">
+      <div class="loading">Загрузка видео</div>
+    </div>
+  </div>
+
+  <!-- Архив (скрыт по умолчанию) -->
+  <div id="archive" class="section">
+    <div class="posts-grid" id="archivePosts">
+      <div class="loading">Закрыт на тех обслуживание</div>
+    </div>
+  </div>
+</div>
+
+
+    <!-- Блок предупреждения об авторизации -->
+    <div id="authWarning" class="auth-warning">
+        <h2>Требуется Telegram</h2>
+        <p>Этот сайт работает только через Telegram.</p>
+        <p>Пожалуйста, откройте через бота:</p>
+        <a href="https://t.me/lovlyprofilebot">@lovlyprofilebot</a>
+    </div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+  getFirestore, collection, query, orderBy, getDocs,
+  doc, getDoc, setDoc, updateDoc, addDoc,
+  serverTimestamp, writeBatch, increment, where,
+  arrayUnion
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+// Конфигурация Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyDPMqef3_hF-QpBr09qtry_45K4h28oMT0",
+  authDomain: "whylovly-website-8adcb.firebaseapp.com",
+  projectId: "whylovly-website-8adcb",
+  storageBucket: "whylovly-website-8adcb.firebasestorage.app",
+  messagingSenderId: "749833792533",
+  appId: "1:749833792533:web:2494649a11b628cd84321c",
+  measurementId: "G-0MKF0C3WQJ"
+};
+
+
+// Инициализация Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+let tg = null;
+let currentUser = null;
+
+async function recordVisit(user) {
+  try {
+    await addDoc(collection(db, 'visitors'), {
+      timestamp: serverTimestamp(),
+      userEmail: user?.email || 'Гость',
+      userPhoto: user?.photoURL || null,
+      displayName: user?.displayName || 'Гость',
+      page: window.location.pathname,
+      userAgent: navigator.userAgent
+    });
+  } catch (error) {
+    console.error('Ошибка записи посещения:', error);
+  }
+}
+
+async function verifyTelegramWebAppData(initData) {
+  try {
+    console.log('Verifying WebApp data:', {
+      initData, hash: window.Telegram?.WebApp?.initDataUnsafe?.hash,
+      authDate: window.Telegram?.WebApp?.initDataUnsafe?.auth_date,
+      user: window.Telegram?.WebApp?.initDataUnsafe?.user
+    });
+    return !!(
+      window.Telegram?.WebApp?.initDataUnsafe?.user?.id &&
+      window.Telegram?.WebApp?.initDataUnsafe?.hash &&
+      window.Telegram?.WebApp?.initDataUnsafe?.auth_date
+    );
+  } catch (error) {
+    console.error('Verification error:', error);
+    return false;
+  }
+}
+
+function isAuthorized() {
+  const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
+  return !!user;
+}
+
+function toggleArchiveNav(unlocked) {
+  document.getElementById('navArchive').style.display =
+    unlocked ? 'inline-block' : 'none';
+}
+
+function showNotification(type, username) {
+  const existing = document.querySelector('.notification');
+  if (existing) existing.remove();
+
+  const icons = { like: '❤️', unlike: '🤍', comment: '💬' };
+  const msgs = { like: 'поставил(а) лайк', unlike: 'убрал(а) лайк', comment: 'добавил(а) комментарий' };
+
+  const notif = document.createElement('div');
+  notif.className = 'notification';
+  notif.innerHTML = `
+    <div class="notification-icon">${icons[type]}</div>
+    <div class="notification-content">
+      <div class="notification-user">@${username}</div>
+      <div class="notification-message">${msgs[type]}</div>
+    </div>`;
+  document.body.appendChild(notif);
+  setTimeout(() => notif.classList.add('show'), 100);
+  setTimeout(() => notif.classList.remove('show'), 3100);
+  setTimeout(() => notif.remove(), 3400);
+}
+    
+// В начале вашего <script type="module"> после import-ов
+function showSection(name) {
+  document.querySelectorAll('.nav-link').forEach(a => a.classList.remove('active'));
+  document.querySelector(`.nav-link[onclick="showSection('${name}')"]`)?.classList.add('active');
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(name)?.classList.add('active');
+
+  // если зашли в архив — подгружаем посты
+  if (name === 'archive') {
+    loadArchivePosts();
+  } else if (name === 'favorites') {
+    loadFavoriteMusicPosts();
+  }
+
+  // 🔔 обнуляем счетчик уведомлений
+  const sectionToStorageKey = {
+  all: 'lastSeen_home', 
+    music: 'lastSeen_music',
+    video: 'lastSeen_video',
+    favorites: 'lastSeen_favorite'
+  };
+
+  if (sectionToStorageKey[name]) {
+    localStorage.setItem(sectionToStorageKey[name], Date.now());
+    const badge = document.getElementById(`badge-${name}`);
+    if (badge) badge.style.display = 'none';
+  }
+}
+
+window.showSection = showSection;
+
+// video.mp4?alt=media → считаем видео
+function isVideo(url) {
+  const clean = url.split(/[?#]/)[0];        // убираем ?... или #...
+  return /\.(mp4|webm|ogg)$/i.test(clean);   // проверяем только «голое» имя
+}
+
+
+
+async function loadProfile() {
+  try {
+    const img = document.getElementById('profileImage');
+    const adminDoc = await getDoc(doc(db, 'profiles', '5794174511'));
+    if (adminDoc.exists() && adminDoc.data().photo_url) {
+      img.src = adminDoc.data().photo_url;
+    }
+    document.getElementById('profileName').textContent = 'whylovly';
+    document.getElementById('profileBio').textContent = 'Личный блог';
+  } catch (e) {
+    console.error('Error loading profile:', e);
+  }
+}
+
+/**
+ * Debounce: вызывает fn не чаще, чем раз в delay миллисекунд.
+ */
+function debounce(fn, delay) {
+  let timer = null;
+  return function(...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
+
+function tsToMillis(ts) {
+  if (!ts) return 0;
+  if (typeof ts === 'string' || typeof ts === 'number') return +new Date(ts);
+  if (typeof ts.seconds === 'number') return ts.seconds * 1000;
+  if (typeof ts.toMillis === 'function') return ts.toMillis();
+  return 0;
+}
+    
+async function loadPosts() {
+  const snap = await getDocs(
+    query(collection(db, 'posts'), orderBy('timestamp', 'desc'))
+  );
+
+  // 1. Сначала выгружаем все не‑архивные посты
+  const raw = snap.docs
+    .map(d => ({ id: d.id, ...d.data() }))
+    .filter(p => !p.isArchive);
+
+  // 2. Добавляем каждому флаг isLiked
+  const posts = raw.map(p => ({
+    ...p,
+    isLiked: Array.isArray(p.likedBy) && p.likedBy.includes(currentUser.id)
+  }));
+window.allPosts = posts;
+
+    // 🔔 Индикаторы новых постов по категориям
+
+const now = Date.now();
+
+function checkBadge(storageKey, badgeId, filterFn) {
+  const lastSeen = Number(localStorage.getItem(storageKey) || 0);
+  const newCount = posts.filter(p =>
+  filterFn(p) && tsToMillis(p.timestamp) > lastSeen
+).length;
+  const badge = document.getElementById(badgeId);
+  if (badge) {
+    badge.style.display = newCount > 0 ? 'inline-block' : 'none';
+    badge.textContent = newCount > 0 ? newCount : '';
+  }
+}
+
+checkBadge('lastSeen_home', 'badge-home', p =>
+  ['photo', 'uploaded_video'].includes(p.category)
+);
+checkBadge('lastSeen_music', 'badge-music', p =>
+  p.category === 'music'
+);
+checkBadge('lastSeen_video', 'badge-video', p =>
+  p.category === 'video'
+);
+checkBadge('lastSeen_favorite', 'badge-favorite', p =>
+  p.category === 'music' && p.isLiked
+);
+
+  // 3. Теперь отрисовываем
+  displayPosts(
+    'allPosts',
+    posts.filter(p => ['photo', 'uploaded_video'].includes(p.category))
+  );
+  displayPosts('musicPosts', posts.filter(p => p.category === 'music'));
+  initMusicPlaylist();
+  displayPosts('videoPosts', posts.filter(p => p.category === 'video'));
+}
+
+ function loadFavoriteMusicPosts() {
+  const favorites = allPosts.filter(post =>
+    post.category === 'music' && post.isLiked
+  );
+  displayPosts('favoriteMusicPosts', favorites);
+}
+window.loadFavoriteMusicPosts = loadFavoriteMusicPosts;   
+/**
+ * Возвращает HTML для одного «locked» поста,
+ * в зависимости от его unlockType и параметров.
+ */
+/**
+ * Рендерит карточку заблокированного поста
+ */
+function renderLockedPost(post) {
+  const seq    = post.archiveSeq;
+  const hint   = post.taskHint    || '';
+  const type   = post.unlockType;
+  const pw     = post.unlockPassword || '';
+  const audio  = post.unlockAudio    || '';
+  const video  = post.unlockVideo    || '';
+  const quiz   = JSON.stringify(post.unlockQuiz || []);
+
+  // выбор иконки
+  let icon;
+  switch (type) {
+    case 'password': icon = '🔒'; break;
+    case 'audio':    icon = '🔊'; break;
+    case 'video':    icon = '📹'; break;
+    case 'quiz':     icon = '❓'; break;
+    default:         icon = '🔒';
+  }
+  const titleText = `${icon} Квест №${seq}`;
+
+  // начало карточки
+  let html = `
+    <div class="post locked" data-post-id="${post.id}">
+      <div class="lock-box">
+        <div class="lock-title">${titleText}</div>`;
+
+  // подсказка (hint)
+  if (hint) {
+    html += `<div class="lock-hint">${hint}</div>`;
+  }
+
+  // вставка управления в зависимости от типа
+  if (type === 'password') {
+    html += `
+      <input id="pwd-${seq}" placeholder="Введите пароль">
+      <button onclick="unlockPassword(${seq}, '${pw}')">Открыть</button>`;
+  } else if (type === 'quiz') {
+    html += `
+      <button onclick='startQuiz(${seq}, ${quiz})'>
+        Пройти викторину
+      </button>`;
+  } else if (type === 'audio') {
+    html += `
+      <button onclick="startAudioGate(${seq}, '${audio}')">
+        Прослушать аудио
+      </button>`;
+  } else if (type === 'video') {
+    html += `
+      <button onclick="startVideoGate(${seq}, '${video}')">
+        Просмотреть видео
+      </button>`;
+  } else {
+    // final / fallback
+    html += `<button onclick="unlockFinal(${seq})">Открыть</button>`;
+  }
+
+  // закрываем карточку
+  html += `
+      </div>
+    </div>`;
+
+  return html;
+}
+    
+function renderLockedFuture(post) {
+  const seq  = post.archiveSeq;
+  const icon = (() => {
+    switch (post.unlockType) {
+      case 'password': return '🔒';
+      case 'audio':    return '🔊';
+      case 'video':    return '📹';
+      case 'quiz':     return '❓';
+      default:         return '🔒';
+    }
+  })();
+
+  return `
+    <div class="post locked" style="opacity:0.4;pointer-events:none">
+      <div class="lock-box">
+        <div class="lock-title">${icon} Квест №${seq}</div>
+        <div class="lock-hint">Сначала выполните Квест №${seq-1}</div>
+      </div>
+    </div>`;
+}
+
+
+    
+/**
+ * Рендерит полностью открытый (unlocked) архивный пост
+ */
+function renderOpenPost(post) {
+  let media = '';
+
+  // 1) собственное видео
+  if (post.category === 'uploaded_video' && post.fileURL) {
+    media = `
+      <div class="video-wrapper">
+        <video
+          class="uploaded-video"
+          playsinline webkit-playsinline
+          controls
+          src="${post.fileURL}"
+          preload="metadata"
+          style="display:none;"
+        ></video>
+        <img
+          class="video-placeholder"
+          src="https://placehold.co/600x400?text=▶"
+          data-video="${post.fileURL}"
+          loading="lazy"
+          alt="Video preview"
+        />
+      </div>`;
+  }
+  /* -------- слайдер фото+видео -------- */
+  /* -------- слайдер / YouTube / фото -------- */
+else {
+  const slideUrls = [];
+  if (Array.isArray(post.photos))  slideUrls.push(...post.photos);
+  if (Array.isArray(post.videos))  slideUrls.push(...post.videos);
+
+  if (slideUrls.length) {
+    const first      = slideUrls[0];
+    const firstSlide = isVideo(first)
+      ? `<img class="slide preview"
+              src="https://placehold.co/600x400?text=▶"
+              data-video="${first}" loading="lazy">`
+      : `<img src="${first}" class="slide" loading="lazy">`;
+
+    media = `
+      <div class="slider" data-idx="0"
+           data-slides='${JSON.stringify(slideUrls.slice(1))}'>
+        ${firstSlide}
+        <button class="prev">‹</button>
+        <button class="next">›</button>
+      </div>`;
+  } else if (post.category === 'video') {            // YouTube-ссылка
+    const id    = getYoutubeVideoId(post.fileURL);
+    const thumb = id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : '';
+    media = `<div class="video-container preview"
+                  data-video-id="${id}"
+                  style="background:url(${thumb}) center/cover no-repeat;cursor:pointer"></div>`;
+  } else if (post.category === 'photo') {            // одиночное фото
+    media = `<img src="${post.fileURL}" loading="lazy">`;
+  } else {                                           // fallback
+    media = `<div class="video-container" style="background:#000"></div>`;
+  }
+}
+
+  // дата
+  const ts = post.timestamp?.seconds
+    ? post.timestamp.seconds * 1000
+    : post.trackDate
+      ? new Date(post.trackDate).getTime()
+      : 0;
+  const date = ts ? new Date(ts).toLocaleDateString('ru-RU') : '—';
+
+  return `
+    <div class="post" data-post-id="${post.id}">
+      ${media}
+      <div class="post-content">
+        <div class="post-description">${post.description || ''}</div>
+        <div class="post-date">${date}</div>
+      </div>
+    </div>`;
+}
+
+
+
+// === Загружаем архивные посты ============================================
+async function loadArchivePosts() {
+    throw new Error("Архив временно закрыт на технические работы");
+  const grid = document.getElementById('archivePosts');
+  grid.innerHTML = '<div class="loading">Загрузка…</div>';
+
+  try {
+    // Получаем прогресс пользователя
+    const progRef  = doc(db, 'userProgress', currentUser.id.toString());
+    const progSnap = await getDoc(progRef);
+    const unlocked = progSnap.data()?.archiveUnlocked || [];         // массив выполненных seq
+    const maxSeq   = unlocked.length ? Math.max(...unlocked) : 0;    // максимально выполненный
+    const nextSeq  = maxSeq + 1;                                     // какой открыть следующим
+
+    // Запрашиваем все архивные посты
+    const snap = await getDocs(
+      query(
+        collection(db, 'posts'),
+        where('isArchive', '==', true),
+        orderBy('archiveSeq', 'asc')
+      )
+    );
+    if (snap.empty) {
+      grid.innerHTML = '<div class="loading">В архиве пока пусто</div>';
+      return;
+    }
+
+    const raw = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const fragments = raw.map(post => {
+      const seq = post.archiveSeq;
+      if (seq <= maxSeq) {
+        // уже выполненные — показываем полностью открытым
+        return renderOpenPost(post);
+      } else if (seq === nextSeq) {
+        // текущее задание — рендерим как заблокированное, но кликабельное
+        return renderLockedPost(post);
+      } else {
+        // будущие задания — показываем полупрозрачными и некликабельными
+        return renderLockedFuture(post);
+      }
+    });
+
+    // Вставляем и инициализируем UI‑компоненты
+    grid.innerHTML = fragments.join('');
+    grid.querySelectorAll('.slider').forEach(initSlider);
+    grid.querySelectorAll('.video-container.preview').forEach(initYouTubePreview);
+    grid.querySelectorAll('.post-description').forEach(initReadMore);
+    grid.querySelectorAll('video.uploaded-video').forEach(v => {
+      v.crossOrigin = 'anonymous';
+      v.addEventListener('loadedmetadata', () => captureFrame(v));
+    });
+    initMusicPlaylist();
+      initLazyVideos();
+
+  } catch (e) {
+    console.error('archive load error:', e);
+    grid.innerHTML = '<div class="loading">🔧 Архив временно закрыт на технические работы. Возвращайся позже!</div>';
+  }
+}
+
+// ======= UI‑хелперы =======
+
+// Слайдер фото/видео с динамическим ресайзингом
+function initSlider(slider) {
+  const pending = JSON.parse(slider.dataset.slides || '[]');
+  let slides = Array.from(slider.querySelectorAll('.slide'));
+  let idx = 0;
+
+  // Восстановить квадратный контейнер
+  function resetSquare() {
+    slider.style.paddingBottom = ''; 
+    slider.style.height = '';
+  }
+
+  // Подогнать контейнер под размер элемента
+  function adjustTo(el) {
+    const w = slider.clientWidth;
+    const ratio = el.tagName === 'VIDEO'
+      ? el.videoHeight / el.videoWidth
+      : el.naturalHeight / el.naturalWidth;
+    slider.style.paddingBottom = '0px';
+    slider.style.height = `${w * ratio}px`;
+  }
+
+  // Показать слайд по индексу
+  function show(newIdx) {
+    resetSquare();
+    const total = slides.length + pending.length;
+    idx = ((newIdx % total) + total) % total;
+
+    // Если индекс выходит за пределы уже вставленных слайдов
+    if (idx >= slides.length) {
+      const url = pending.shift();
+      let el;
+      if (/\.(mp4|webm|ogg)$/.test(url)) {
+        // создаём превью для видео
+        el = document.createElement('img');
+        el.className = 'slide preview';
+        el.src = 'https://placehold.co/600x400?text=▶';
+        el.dataset.video = url;
+      } else {
+        el = document.createElement('img');
+        el.className = 'slide';
+        el.src = url;
+      }
+      slider.insertBefore(el, slider.querySelector('.prev'));
+      slides = Array.from(slider.querySelectorAll('.slide'));
+      slider.dataset.slides = JSON.stringify(pending);
+    }
+
+    slides.forEach(s => s.classList.remove('active'));
+    const current = slides[idx];
+    current.classList.add('active');
+
+  if (current.tagName === 'VIDEO') {
+  /* 1. Полностью убираем mute-флаги */
+  current.pause();               // если вдруг уже играет без звука
+  current.muted        = false;
+  current.defaultMuted = false;  // снимаем «глобальный» мут
+  current.removeAttribute('muted');
+
+  /* 2. Убедимся, что громкость слышна */
+  current.volume = 1;
+
+  /* 3. Перезапускаем ролик — этот вызов идёт после
+        клика по стрелке/свайпа, поэтому считается
+        «пользовательским жестом» и звук разрешён.      */
+  const p = current.play();
+  if (p?.catch) p.catch(()=>{}); // ловим возможный warning
+}
+
+    if (current.tagName === 'IMG') {
+      if (current.complete) adjustTo(current);
+      else current.onload = () => adjustTo(current);
+    } else {
+      current.onloadedmetadata = () => adjustTo(current);
+      current.controls = true;
+    }
+  }
+
+  // Заменяем превью-картинку видео на настоящий <video>
+  slider.addEventListener('click', e => {
+    const t = e.target;
+    if (t.tagName === 'IMG' && t.classList.contains('preview')) {
+      const videoUrl = t.dataset.video;
+      const videoEl = document.createElement('video');
+      videoEl.className = 'slide';
+      videoEl.controls = true;
+      videoEl.setAttribute('playsinline', '');
+      videoEl.src = videoUrl;
+      slider.replaceChild(videoEl, t);
+      slides = Array.from(slider.querySelectorAll('.slide'));
+      show(idx);
+    }
+  });
+
+  // Fullscreen по клику на видео
+  slides.forEach(v => {
+    if (v.tagName === 'VIDEO') {
+      v.controls = true;
+      v.addEventListener('click', () => {
+        if (v.requestFullscreen) v.requestFullscreen();
+        else if (v.webkitRequestFullscreen) v.webkitRequestFullscreen();
+        else if (v.msRequestFullscreen) v.msRequestFullscreen();
+      });
+    }
+  });
+
+  // Навигация стрелками
+  slider.querySelector('.prev').onclick = () => show(idx - 1);
+  slider.querySelector('.next').onclick = () => show(idx + 1);
+
+  // Тач-свайп
+  let startX = null;
+  slider.addEventListener('touchstart', e => startX = e.touches[0].clientX, { passive: true });
+  slider.addEventListener('touchend', e => {
+    if (startX === null) return;
+    const dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 30) show(dx < 0 ? idx + 1 : idx - 1);
+    startX = null;
+  }, { passive: true });
+
+  // Инициализируем первый слайд
+  show(0);
+}
+
+
+
+
+// Ленивое YouTube‑встраивание
+function initYouTubePreview(div) {
+  const vid = div.dataset.videoId;
+  if (!vid) return;
+  div.onclick = () => {
+    div.innerHTML = `
+      <iframe
+        src="https://www.youtube.com/embed/${vid}?autoplay=1"
+        allowfullscreen
+        style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;">
+      </iframe>`;
+  };
+}
+
+// "Читать далее" для описаний
+function initReadMore(p) {
+  if (p.scrollHeight <= 120) {
+    p.classList.add('expanded');
+  } else {
+    p.onclick = () => p.classList.toggle('expanded');
+  }
+}
+
+
+
+/* ---------- helpers для разблокировки ---------- */
+async function isTaskUnlocked(seq) {
+  const ref = doc(db, 'userProgress', currentUser.id.toString());
+  const snap = await getDoc(ref);
+  const arr  = snap.data()?.archiveUnlocked || [];
+  return arr.includes(seq);
+}
+// Помечает квест выполненным, обновляет maxLevel/lastUpdate и записывает событие
+async function markTaskUnlocked(seq) {
+  const userId = currentUser.id.toString();
+  const ref = doc(db, 'userProgress', userId);
+
+  // 1) обновляем прогресс
+  const updates = {
+    archiveUnlocked: arrayUnion(seq),
+    maxLevel: seq,
+    lastUpdate: serverTimestamp()
+  };
+  await updateDoc(ref, updates);
+
+  // 2) (опционально) пишем историю в questEvents
+  await addDoc(collection(db, 'questEvents'), {
+    userId: userId,
+    level: seq,
+    completedAt: serverTimestamp()
+  });
+}
+
+/* ---------- UI‑коллбеки ---------- */
+window.unlockPassword = async (seq, correct) => {
+  const inp = document.getElementById(`pwd-${seq}`);
+  if (inp.value.trim() === correct) {
+    await markTaskUnlocked(seq);
+    loadArchivePosts();   // перерисуем карточку
+  } else {
+    alert('Неверный пароль');
+  }
+};
+window.unlockFinal = async seq => {
+  await markTaskUnlocked(seq);
+  loadArchivePosts();
+};
+
+/* ---------- КВИЗ ---------- */
+window.startQuiz = function (seq, quizArr) {
+  let cur = 0;                                   // индекс текущего вопроса
+  const ov = document.createElement('div');
+  ov.className = 'quiz-overlay';
+  document.body.appendChild(ov);
+
+  const render = () => {
+    const q = quizArr[cur];
+
+    /* карточки‑варианты */
+const optsHtml = q.options.map((opt, i) => {
+  // если пришла просто строка — это текстовый вариант
+  const isTextOnly = (typeof opt === 'string');
+  // картинка, если объект с imgURL
+  const imgPart    = !isTextOnly && opt.imgURL
+    ? `<img src="${opt.imgURL}" loading="lazy">`
+    : '';
+  // текст — либо строка, либо свойство text у объекта
+  const textPart   = `<span>${ isTextOnly ? opt : (opt.text || '') }</span>`;
+
+  return `
+    <button class="quiz-opt ${isTextOnly ? 'text-only' : ''}" data-idx="${i}">
+      ${imgPart}
+      ${textPart}
+    </button>`;
+}).join('');
+
+
+    /* разметка вопроса */
+    ov.innerHTML = `
+      <div class="quiz-card">
+        ${q.imgURL ? `<img src="${q.imgURL}" class="quiz-img" loading="lazy">` : ''}
+        <div class="quiz-q">${q.question}</div>
+        <div class="quiz-grid">${optsHtml}</div>
+        <button class="quiz-close">✖ Закрыть</button>
+      </div>`;
+
+    /* обработка кликов по вариантам */
+    ov.querySelectorAll('.quiz-opt').forEach(btn => {
+      btn.onclick = async () => {
+        if (++cur === quizArr.length) {            // всё пройдено
+          await markTaskUnlocked(seq);
+          ov.remove();
+          loadArchivePosts();
+          alert('✅ Задание выполнено!');
+        } else {
+          render();                                // следующий вопрос
+        }
+      };
+    });
+
+    /* закрытие оверлея */
+    ov.querySelector('.quiz-close').onclick = () => ov.remove();
+  };
+
+  render();
+};
+
+// -------- AUDIO GATE --------
+window.startAudioGate = function(seq, url) {
+  const ov = document.createElement('div');
+  ov.className = 'quiz-overlay';
+  ov.innerHTML = `
+    <div class="quiz-card">
+      <audio id="gateAudio" controls src="${url}"></audio>
+      <p style="margin-top:15px">Слушайте минимум 10 секунд…</p>
+      <button class="quiz-close">✖ Закрыть</button>
+    </div>`;
+  document.body.appendChild(ov);
+
+  const a = ov.querySelector('#gateAudio');
+  let played = 0;
+  let timer = null;
+  let finished = false;
+
+  // отслеживаем воспроизведение
+  a.onplay = () => {
+    if (finished) return;
+    timer = setInterval(() => {
+      if (++played >= 10) finish();
+    }, 1000);
+  };
+  a.onpause = () => clearInterval(timer);
+
+  function finish() {
+    if (finished) return;
+    finished = true;
+    clearInterval(timer);
+    // помечаем задание выполненным, но НЕ убираем оверлей
+    markTaskUnlocked(seq).then(() => {
+      alert('✅ Задание выполнено! Теперь вы можете закрыть окно');
+    });
+  }
+
+  // кнопка «Закрыть» теперь удаляет оверлей и перезагружает архив
+  ov.querySelector('.quiz-close').onclick = () => {
+    clearInterval(timer);
+    ov.remove();
+    loadArchivePosts();
+  };
+};
+
+// -------- VIDEO GATE --------
+window.startVideoGate = function(seq, url) {
+  const ov = document.createElement('div');
+  ov.className = 'quiz-overlay';
+  ov.innerHTML = `
+    <div class="quiz-card">
+      <video id="gateVideo" controls src="${url}" style="width:100%;height:auto"></video>
+-     <p style="margin-top:15px">Смотреть минимум 10 секунд…</p>
++     <p style="margin-top:15px">Смотреть минимум 1 минуту 24 секунды…</p>
+      <button class="quiz-close">✖ Закрыть</button>
+    </div>`;
+  document.body.appendChild(ov);
+
+  const v = ov.querySelector('#gateVideo');
+  let watched = 0;
+  let timer = null;
+  let finished = false;
+  const THRESHOLD = 84; // 1 мин 24 сек
+
+  v.onplay = () => {
+    if (finished) return;
+    timer = setInterval(() => {
+      watched++;
+      if (watched >= THRESHOLD) finish();
+    }, 1000);
+  };
+  v.onpause = () => clearInterval(timer);
+
+  function finish() {
+    if (finished) return;
+    finished = true;
+    clearInterval(timer);
+    markTaskUnlocked(seq).then(() => {
+      alert('✅ Задание выполнено! Теперь вы можете закрыть окно');
+    });
+  }
+
+  ov.querySelector('.quiz-close').onclick = () => {
+    clearInterval(timer);
+    ov.remove();
+    loadArchivePosts();
+  };
+};
+
+
+function displayPosts(containerId, posts) {
+  // Вспомогательная функция для таймстемпа
+  const ts = p =>
+    p.trackDate ? +new Date(p.trackDate) :
+    p.timestamp?.seconds ? p.timestamp.seconds * 1000 :
+    typeof p.timestamp === 'string' ? +new Date(p.timestamp) :
+    p.timestamp?.toDate ? +p.timestamp.toDate() : 0;
+
+  // Сортируем по дате
+  posts = [...posts].sort((a, b) => ts(b) - ts(a));
+  const container = document.getElementById(containerId);
+
+  if (!posts.length) {
+    container.innerHTML = `<div class="post"><div class="post-content">Нет постов</div></div>`;
+    return;
+  }
+
+  // Собираем HTML
+container.innerHTML = posts.map(post => {
+  let media = '';
+
+ /* ---------- контент поста ---------- */
+if (post.category === 'uploaded_video' && post.fileURL) {
+  media = `
+    <div class="video-wrapper">
+      <video class="uploaded-video" playsinline webkit-playsinline
+             controls preload="metadata" src="${post.fileURL}"
+             style="display:none;"></video>
+      <img class="video-placeholder"
+           src="https://placehold.co/600x400?text=▶"
+           data-video="${post.fileURL}" loading="lazy" alt="Video preview">
+    </div>`;
+}
+
+else if (post.category === 'music') {
+  media = `
+    <div class="audio-post">
+      <div class="audio-cover">
+        <img src="${post.coverURL || 'https://placehold.co/100x100?text=No+Cover'}"
+             loading="lazy" alt="Cover">
+      </div>
+      <div class="audio-info" data-src="${post.fileURL}">
+        <div class="audio-title">${post.description || ''}</div>
+        <div class="audio-controls">
+          <button class="btn-prev">⏮️</button>
+          <button class="btn-play">▶️</button>
+          <button class="btn-next">⏭️</button>
+        </div>
+        <div class="audio-progress">
+          <div class="bar"><div class="fill"></div></div>
+          <div class="time"><span class="current">00:00</span>
+                            <span class="duration">00:00</span></div>
+        </div>
+      </div>
+    </div>`;
+}
+
+else if (post.category === 'video') {
+  const id    = getYoutubeVideoId(post.fileURL);
+  const thumb = id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : '';
+  media = `<div class="video-container preview" data-video-id="${id}"
+            style="background:url(${thumb}) center/cover no-repeat;cursor:pointer"></div>`;
+}
+
+else {                       /* фото / слайдер / fallback */
+  const slideUrls = [];
+  if (Array.isArray(post.photos))  slideUrls.push(...post.photos);
+  if (Array.isArray(post.videos))  slideUrls.push(...post.videos);
+
+  if (slideUrls.length) {
+    const first      = slideUrls[0];
+    const firstSlide = isVideo(first)
+      ? `<img class="slide preview" src="https://placehold.co/600x400?text=▶"
+               data-video="${first}" loading="lazy">`
+      : `<img src="${first}" class="slide" loading="lazy">`;
+
+    media = `
+      <div class="slider" data-idx="0"
+           data-slides='${JSON.stringify(slideUrls.slice(1))}'>
+        ${firstSlide}
+        <button class="prev">‹</button>
+        <button class="next">›</button>
+      </div>`;
+  } else if (post.category === 'photo') {
+    media = `<img src="${post.fileURL}" loading="lazy">`;
+  } else {
+    media = `<div class="video-container" style="background:#000"></div>`;
+  }
+}
+
+
+  const date = ts(post)
+    ? new Date(ts(post)).toLocaleDateString('ru-RU')
+    : '—';
+
+  return `
+    <div class="post" data-post-id="${post.id}">
+      ${media}
+      <div class="post-content">
+        <div class="post-description">${post.description}</div>
+        <div class="post-date">${date}</div>
+        <div class="post-actions">
+          <button class="action-btn ${post.isLiked ? 'liked' : ''}"
+                  onclick="handleLike('${post.id}')">
+            ${post.isLiked ? '❤️' : '🤍'} ${post.likes||0}
+          </button>
+          <button class="action-btn" onclick="toggleComments('${post.id}')">
+            💬 ${post.commentsCount||0}
+          </button>
+        </div>
+<div class="comments-section" id="comments-${post.id}" style="display:none">
+          <div class="comments-container" id="comments-container-${post.id}"></div>
+          <div class="comment-form">
+            <textarea
+              class="comment-input"
+              id="comment-input-${post.id}"
+              placeholder="Написать комментарий..."
+            ></textarea>
+            <button
+              class="comment-submit"
+              onclick="addComment('${post.id}')"
+            >
+              Отправить
+            </button>
+          </div>
+        </div>
+        <!-- /конец блока -->
+      </div>
+    </div>`;
+}).join('');
+
+  // Инициализация слайдеров (фото/видео)
+container.querySelectorAll('.slider').forEach(initSlider);
+
+  // Ленивый YouTube
+  container.querySelectorAll('.video-container.preview').forEach(div => {
+    const vid = div.dataset.videoId;
+    if (!vid) return;
+    div.addEventListener('click', () => {
+      div.innerHTML = `
+        <iframe
+          src="https://www.youtube.com/embed/${vid}?autoplay=1"
+          allowfullscreen
+          style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;">
+        </iframe>`;
+    });
+  });
+
+// «Читать далее» — делаем кликабельной обрезанную по высоте подсказку
+container.querySelectorAll('.post-description').forEach(p => {
+  // если текст короче 120px — сразу разворачиваем и скрываем подсказку
+  if (p.scrollHeight <= 120) {
+    p.classList.add('expanded');
+  } else {
+    // иначе добавляем слушатель, который по клику переключает класс
+    p.addEventListener('click', () => p.classList.toggle('expanded'));
+  }
+});
+
+
+  // Постер для uploaded-video
+  container.querySelectorAll('video.uploaded-video').forEach(v => {
+    v.crossOrigin = 'anonymous';
+    v.addEventListener('loadedmetadata', () => captureFrame(v));
+  });
+
+  // После отрисовки всех постов нужно инициализировать аудио-плееры:
+  initMusicPlaylist();
+    initLazyVideos();
+}
+
+
+// Универсальный парсер YouTube‑ID
+function getYoutubeVideoId(url) {
+  const m = url.match(/(?:v=|youtu\.be\/|\/embed\/)([^&?/]+)/);
+  return m ? m[1] : '';
+}
+
+
+window.musicPlaylist = [];
+let currentMusicIndex = -1;
+function initMusicPlaylist() {
+  const posts = document.querySelectorAll('.audio-post');
+  window.musicPlaylist = Array.from(posts).map((el, i) => {
+    // находим .audio-info внутри текущего .audio-post
+    const infoEl = el.querySelector('.audio-info');
+    const src = infoEl.dataset.src;
+    const audio = new Audio(src);
+    audio.preload = 'metadata';
+    audio.onended = playNext;
+    audio.ontimeupdate = () => updateProgress(i);
+    return {
+      el,
+      audio,
+      title: el.querySelector('.audio-title').textContent
+    };
+  });
+
+  musicPlaylist.forEach((item, i) => {
+    // play/pause
+    item.el.querySelector('.btn-play').onclick = () => {
+      if (i === currentMusicIndex && !item.audio.paused) {
+        item.audio.pause();
+      } else {
+        playTrack(i);
+      }
+    };
+    // prev / next
+    item.el.querySelector('.btn-prev').onclick = playPrev;
+    item.el.querySelector('.btn-next').onclick = playNext;
+    // прогресс-бар кликабельный
+    item.el.querySelector('.bar').onclick = e => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const pct  = (e.clientX - rect.left) / rect.width;
+      item.audio.currentTime = pct * (item.audio.duration || 0);
+    };
+  });
+}
+
+
+function playTrack(i) {
+  if (currentMusicIndex>=0) musicPlaylist[currentMusicIndex].audio.pause();
+  currentMusicIndex = i;
+  musicPlaylist[i].audio.play();
+  onUserPlayed();
+  showMiniPlayer();
+  updateUI();
+}
+
+async function onUserPlayed() {
+  const ref = doc(db,'userProgress',currentUser.id.toString());
+  await updateDoc(ref,{ playCount: increment(1) });
+  const snap = await getDoc(ref);
+  const { playCount, firstTaskCompleted } = snap.data();
+  if (!firstTaskCompleted && playCount>=5) {
+    await updateDoc(ref,{ firstTaskCompleted:true });
+    alert('🎉 Ты стал ближе к артисту! Теперь появилась вкладка «Архив».');
+    toggleArchiveNav(true);
+  }
+}
+
+function playNext() { playTrack((currentMusicIndex+1)%musicPlaylist.length); }
+function playPrev() { playTrack((currentMusicIndex-1+musicPlaylist.length)%musicPlaylist.length); }
+
+function updateUI() {
+  musicPlaylist.forEach((item,i)=>{
+    item.el.querySelector('.btn-play').textContent =
+      (i===currentMusicIndex && !item.audio.paused)?'⏸️':'▶️';
+    if (i===currentMusicIndex) {
+      const dur = item.el.querySelector('.duration');
+      if (item.audio.duration) dur.textContent = formatTime(item.audio.duration);
+    }
+  });
+  const mini = document.querySelector('.mini-player');
+  if (mini) {
+    mini.querySelector('img').src = musicPlaylist[currentMusicIndex].el.querySelector('img')?.src;
+    mini.querySelector('.title').textContent = musicPlaylist[currentMusicIndex].title;
+    mini.querySelector('.fill').style.width =
+      `${(musicPlaylist[currentMusicIndex].audio.currentTime/musicPlaylist[currentMusicIndex].audio.duration)*100}%`;
+  }
+}
+
+function updateProgress(idx) {
+  if (idx!==currentMusicIndex) return;
+  const fill = musicPlaylist[idx].el.querySelector('.fill');
+  fill.style.width = `${(musicPlaylist[idx].audio.currentTime/musicPlaylist[idx].audio.duration)*100}%`;
+  musicPlaylist[idx].el.querySelector('.current').textContent =
+    formatTime(musicPlaylist[idx].audio.currentTime);
+  updateUI();
+}
+
+function formatTime(s) {
+  const m = String(Math.floor(s/60)).padStart(2,'0');
+  const sec = String(Math.floor(s%60)).padStart(2,'0');
+  return `${m}:${sec}`;
+}
+
+function showMiniPlayer() {
+  let mini = document.querySelector('.mini-player');
+  if (!mini) {
+    mini = document.createElement('div');
+    mini.className = 'mini-player';
+    mini.innerHTML = `
+      <img><div class="info"><div class="title"></div>
+      <div class="mini-controls">
+        <button class="btn-prev">⏮️</button>
+        <button class="btn-play">▶️</button>
+        <button class="btn-next">⏭️</button>
+      </div>
+      <div class="mini-progress"><div class="fill"></div></div></div>`;
+    document.body.appendChild(mini);
+    mini.querySelector('.btn-prev').onclick = playPrev;
+    mini.querySelector('.btn-play').onclick = ()=> playTrack(currentMusicIndex);
+    mini.querySelector('.btn-next').onclick = playNext;
+    mini.onclick = ()=> showSection('music');
+  }
+  mini.classList.add('show');
+  updateUI();
+}
+
+window.toggleComments = async function(postId) {
+  const sec = document.getElementById(`comments-${postId}`);
+  if (sec.style.display==='none') {
+    sec.style.display='block';
+    await loadComments(postId);
+  } else sec.style.display='none';
+};
+
+async function loadComments(postId) {
+  const cont = document.getElementById(`comments-container-${postId}`);
+  const snap = await getDocs(query(collection(db,'comments'), where('postId','==',postId), orderBy('timestamp','desc')));
+  cont.innerHTML = snap.empty
+    ? '<div class="comment">Нет комментариев</div>'
+    : snap.docs.map(d=>{
+        const c = d.data();
+        const date = c.timestamp ? new Date(c.timestamp.seconds*1000).toLocaleString('ru-RU') : 'Недавно';
+        return `
+          <div class="comment">
+            <div class="comment-header">
+              <span class="comment-author">@${c.username}</span>
+              <span class="comment-date">${date}</span>
+            </div>
+            <div class="comment-text">${c.text}</div>
+          </div>`;
+      }).join('');
+}
+
+window.addComment = async function(postId) {
+  const inp = document.getElementById(`comment-input-${postId}`);
+  const text = inp.value.trim();
+  if (!text) return alert('Введите текст комментария');
+  const batch = writeBatch(db);
+  const cref = doc(collection(db,'comments'));
+  batch.set(cref,{ postId, userId:currentUser.id, username:currentUser.username, text, timestamp:serverTimestamp() });
+  batch.update(doc(db,'posts',postId),{ commentsCount:increment(1) });
+  await batch.commit();
+  inp.value = '';
+  await loadComments(postId);
+};
+
+async function checkLikeStatus(postId) {
+  const d = await getDoc(doc(db,'likes',`${postId}_${currentUser.id}`));
+  return d.exists();
+}
+
+window.handleLike = debounce(async function(postId) {
+  if (!isAuthorized()) return alert('Требуется Telegram');
+  const refLike = doc(db,'likes',`${postId}_${currentUser.id}`);
+  const refPost = doc(db,'posts',postId);
+  const [lDoc, pDoc] = await Promise.all([ getDoc(refLike), getDoc(refPost) ]);
+  const post = pDoc.data();
+  const batch = writeBatch(db);
+  if (lDoc.exists()) {
+    batch.delete(refLike);
+    batch.update(refPost,{ likes: Math.max(0,(post.likes||0)-1), likedBy: (post.likedBy||[]).filter(id=>id!==currentUser.id) });
+    showNotification('unlike', currentUser.username);
+  } else {
+    batch.set(refLike,{ userId:currentUser.id, postId, username:currentUser.username, timestamp:serverTimestamp() });
+    batch.update(refPost,{ likes:(post.likes||0)+1, likedBy:[...(post.likedBy||[]),currentUser.id] });
+    showNotification('like', currentUser.username);
+  }
+  await batch.commit();
+  loadPosts();
+}, 300);
+
+
+// 1) Доработанный captureFrame: передаём callback, который отдаёт dataURL
+function captureFrame(video, cb) {
+  if (!video.duration || video.duration === Infinity) return;
+  const onSeeked = () => {
+    try {
+      const c = document.createElement('canvas');
+      c.width = video.videoWidth;  c.height = video.videoHeight;
+      c.getContext('2d').drawImage(video, 0, 0);
+      const dataUrl = c.toDataURL();
+      video.poster = dataUrl;
+      cb && cb(dataUrl);
+      video.currentTime = 0;
+    } catch(e) { console.error(e); }
+    video.removeEventListener('seeked', onSeeked);
+  };
+  video.addEventListener('seeked', onSeeked);
+  video.currentTime = Math.min(1, video.duration/2);
+}
+
+// 2) Обновлённый initLazyVideos
+function initLazyVideos() {
+  document.querySelectorAll('.video-wrapper').forEach(wrapper => {
+    const video = wrapper.querySelector('video.uploaded-video');
+    const img   = wrapper.querySelector('img.video-placeholder');
+
+    video.crossOrigin = 'anonymous';
+    video.preload    = 'metadata';
+    video.addEventListener('loadedmetadata', () => {
+      // дождёмся echte captureFrame, и только потом обновим <img>
+      captureFrame(video, (thumb) => {
+        img.src = thumb;
+      });
+    });
+    video.load();
+
+    img.addEventListener('click', () => {
+      // при клике полностью меняем обёртку, чтобы убирать псевдо-стрелку
+      wrapper.replaceWith(video);
+      video.style.display = 'block';
+      video.play();
+    }, { once: true });
+  });
+}
+
+
+    
+async function initTelegram() {
+  try {
+    if (!window.Telegram?.WebApp) throw new Error();
+    tg = window.Telegram.WebApp; tg.expand(); tg.ready();
+    const ok = await verifyTelegramWebAppData(tg.initData);
+    if (!ok) throw new Error();
+    currentUser = tg.initDataUnsafe.user;
+ 
+    const MY_TG_ID = 1793739917;  // <-- сюда впиши свой ID
+
+    if (currentUser.id === MY_TG_ID) {
+      const btn = document.getElementById('resetProgressBtn');
+      btn.style.display = 'block';
+      btn.onclick = async () => {
+        try {
+          // перезаписываем документ userProgress/<yourId>
+          await setDoc(
+            doc(db, 'userProgress', currentUser.id.toString()),
+            {
+              playCount: 0,
+              firstTaskCompleted: false,
+              archiveUnlocked: []
+            },
+            { merge: true }
+          );
+          alert('✅ Ваш прогресс сброшен');
+          // чтобы сразу увидеть эффект
+          loadPosts();
+          loadArchivePosts();
+        } catch (e) {
+          console.error(e);
+          alert('Ошибка при сбросе прогресса');
+        }
+      };
+    }
+
+    if (!currentUser?.id) throw new Error();
+    const progRef = doc(db,'userProgress',currentUser.id.toString());
+    let snap = await getDoc(progRef);
+    if (!snap.exists()) {
+      await setDoc(progRef,{ playCount:0, firstTaskCompleted:false, archiveUnlocked:[] });
+      snap = await getDoc(progRef);
+    }
+    toggleArchiveNav(snap.data().firstTaskCompleted);
+    await recordVisit({ email:currentUser.username, displayName:currentUser.first_name, photoURL:currentUser.photo_url });
+    document.getElementById('authWarning').style.display = 'none';
+    await loadProfile();
+    await loadPosts();
+  } catch {
+    document.getElementById('authWarning').style.display = 'flex';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', initTelegram);
+window.addEventListener('load', ()=> {
+  if (!window.Telegram?.WebApp) document.getElementById('authWarning').style.display = 'flex';
+});
+</script>
+
+</body>
+</html
+
+УБРАЛ ТРИУГОЛЬНИК ЗАКРЫВАЮЩИЙ НАВЕРХУ В ХТМЛ 
+И ВНИЗУ ТУТ НАПИСАО ЕРЕНДУ ЧТО БЫ НЕ РАБОТАЛО 
+
+)--@1192737418-
+
+и наверху наверняка в первой строке я тоже убрал триуотльник открывающий 
+на 937 убрал скобочки и точки закрывающие функцию и сделал скоин в телефоне и куда то скинул 
+
+
+
