@@ -208,6 +208,55 @@
         transform: translateY(0);
         animation: fadeIn 0.5s ease;
     }
+
+    /* Мини-чат с артистом */
+    #chat {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 300px;
+        height: 400px;
+        display: flex;
+        flex-direction: column;
+        background: var(--card-bg);
+        border: 1px solid var(--neon-color);
+        border-radius: var(--border-radius);
+        z-index: 200;
+    }
+    #messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 10px;
+    }
+    .msg {
+        margin-bottom: 8px;
+    }
+    .msg.user {
+        text-align: right;
+        color: var(--neon-color);
+    }
+    .msg.artist {
+        text-align: left;
+        color: var(--secondary-text);
+    }
+    #chatForm {
+        display: flex;
+        border-top: 1px solid var(--neon-color);
+    }
+    #chatInput {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        background: transparent;
+        color: var(--text-color);
+    }
+    #chatForm button {
+        background: var(--neon-color);
+        color: var(--bg-color);
+        border: none;
+        padding: 10px 15px;
+        cursor: pointer;
+    }
 </style>
 <style>
 
@@ -964,6 +1013,15 @@
   </div>
 </div>
 
+<!-- Мини-чат -->
+<div id="chat">
+  <div id="messages"></div>
+  <form id="chatForm">
+    <input id="chatInput" type="text" placeholder="Сообщение..." autocomplete="off" />
+    <button type="submit">⮞</button>
+  </form>
+</div>
+
 
     <!-- Блок предупреждения об авторизации -->
     <div id="authWarning" class="auth-warning">
@@ -979,7 +1037,7 @@ import {
   getFirestore, collection, query, orderBy, getDocs,
   doc, getDoc, setDoc, updateDoc, addDoc,
   serverTimestamp, writeBatch, increment, where,
-  arrayUnion
+  arrayUnion, onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
@@ -2263,21 +2321,55 @@ async function initTelegram() {
 }
 
 document.addEventListener('DOMContentLoaded', initTelegram);
-window.addEventListener('load', ()=> {
+window.addEventListener('load', () => {
   if (!window.Telegram?.WebApp) document.getElementById('authWarning').style.display = 'flex';
 });
+
+/* ====== Чат подписчика с артистом ====== */
+const chatUserId =
+  localStorage.getItem('chatUserId') ||
+  (localStorage.setItem('chatUserId', crypto.randomUUID()), localStorage.getItem('chatUserId'));
+const messagesBox = document.getElementById('messages');
+const chatForm = document.getElementById('chatForm');
+const chatInput = document.getElementById('chatInput');
+
+if (chatForm) {
+  chatForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const text = chatInput.value.trim();
+    if (!text) return;
+    await addDoc(collection(db, 'chats'), {
+      userId: chatUserId,
+      text,
+      timestamp: serverTimestamp()
+    });
+    chatInput.value = '';
+  });
+
+  const q = query(
+    collection(db, 'chats'),
+    where('userId', '==', chatUserId),
+    orderBy('timestamp')
+  );
+  onSnapshot(q, (snap) => {
+    messagesBox.innerHTML = '';
+    snap.forEach((docSnap) => {
+      const data = docSnap.data();
+      const userDiv = document.createElement('div');
+      userDiv.className = 'msg user';
+      userDiv.textContent = data.text;
+      messagesBox.appendChild(userDiv);
+      if (data.reply) {
+        const replyDiv = document.createElement('div');
+        replyDiv.className = 'msg artist';
+        replyDiv.textContent = data.reply;
+        messagesBox.appendChild(replyDiv);
+      }
+    });
+    messagesBox.scrollTop = messagesBox.scrollHeight;
+  });
+}
 </script>
 
 </body>
-</html
-
-УБРАЛ ТРИУГОЛЬНИК ЗАКРЫВАЮЩИЙ НАВЕРХУ В ХТМЛ 
-И ВНИЗУ ТУТ НАПИСАО ЕРЕНДУ ЧТО БЫ НЕ РАБОТАЛО 
-
-)--@1192737418-
-
-и наверху наверняка в первой строке я тоже убрал триуотльник открывающий 
-на 937 убрал скобочки и точки закрывающие функцию и сделал скоин в телефоне и куда то скинул 
-
-
-
+</html>
