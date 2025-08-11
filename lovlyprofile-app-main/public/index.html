@@ -29,6 +29,14 @@
         --border-radius: 15px;
     }
 
+    body.light-mode {
+        --bg-color: #f5f5f5;
+        --card-bg: rgba(255, 255, 255, 0.8);
+        --text-color: #121212;
+        --secondary-text: #333333;
+        color-scheme: light;
+    }
+
     /* Сброс и базовые стили */
     * {
         margin: 0;
@@ -156,6 +164,25 @@
     }
 
     .nav-link.active {
+        background: var(--neon-color);
+        color: var(--bg-color);
+    }
+
+    .theme-toggle {
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: transparent;
+        border: 1px solid var(--neon-color);
+        border-radius: var(--border-radius);
+        color: var(--neon-color);
+        padding: 10px 15px;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .theme-toggle:hover {
         background: var(--neon-color);
         color: var(--bg-color);
     }
@@ -875,8 +902,9 @@
            class="nav-link"
            style="display: none;"
            onclick="showSection('archive')">
-          Архив
+         Архив
         </a>
+        <button id="themeToggle" class="theme-toggle" aria-label="Переключить тему">🌙</button>
     </div>
 
 <button
@@ -974,6 +1002,20 @@ const auth = getAuth(app);
 
 let tg = null;
 let currentUser = null;
+
+const themeToggle = document.getElementById('themeToggle');
+if (themeToggle) {
+  function applyTheme(theme) {
+    document.body.classList.toggle('light-mode', theme === 'light');
+    themeToggle.textContent = theme === 'light' ? '🌙' : '☀️';
+    localStorage.setItem('theme', theme);
+  }
+  applyTheme(localStorage.getItem('theme') || 'dark');
+  themeToggle.addEventListener('click', () => {
+    const newTheme = document.body.classList.contains('light-mode') ? 'dark' : 'light';
+    applyTheme(newTheme);
+  });
+}
 
 async function recordVisit(user) {
   try {

@@ -24,6 +24,13 @@
       --error-color: #ff4444;
     }
 
+    body.light-mode {
+      --bg-dark: #f5f5f5;
+      --bg-card: rgba(255, 255, 255, 0.8);
+      --text-color: #121212;
+      color-scheme: light;
+    }
+
     body {
       font-family: 'Roboto', sans-serif;
       background: var(--bg-dark);
@@ -31,6 +38,7 @@
       margin: 0;
       padding: 20px;
       min-height: 100vh;
+      color-scheme: dark;
     }
 
     /* СТИЛИ ИНТЕРФЕЙСА - КОПИРУЕМ ИЗ ПЕРВОГО КОДА */
@@ -82,6 +90,20 @@
       transform: translateY(-2px);
     }
     .tab-button.active {
+      background: var(--neon-color);
+      color: var(--bg-dark);
+    }
+    .theme-toggle {
+      margin-left: auto;
+      background: transparent;
+      border: 1px solid var(--neon-color);
+      color: var(--neon-color);
+      border-radius: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .theme-toggle:hover {
       background: var(--neon-color);
       color: var(--bg-dark);
     }
@@ -435,6 +457,7 @@
         <h2 id="currentProfileName">whylovly</h2>
         <p id="currentProfileBio">Музыкант | Создатель контента | Артист</p>
       </div>
+      <button id="themeToggle" class="theme-toggle" aria-label="Переключить тему">🌙</button>
     </div>
 
     <!-- Навигация по табам -->
@@ -743,6 +766,18 @@ import {
   const auth = getAuth(app);
   const db = getFirestore(app);
   const storage = getStorage(app);
+
+  const themeToggle = document.getElementById('themeToggle');
+  function applyTheme(theme) {
+    document.body.classList.toggle('light-mode', theme === 'light');
+    themeToggle.textContent = theme === 'light' ? '🌙' : '☀️';
+    localStorage.setItem('theme', theme);
+  }
+  applyTheme(localStorage.getItem('theme') || 'dark');
+  themeToggle.addEventListener('click', () => {
+    const newTheme = document.body.classList.contains('light-mode') ? 'dark' : 'light';
+    applyTheme(newTheme);
+  });
 
   /* ====== Настраиваем локальное хранилище для сессии ====== */
   setPersistence(auth, browserLocalPersistence)
